@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:learning_app/presentation/pages/home/home_page.dart';
+import 'package:learning_app/presentation/pages/decks/decks_page.dart';
 import 'package:learning_app/presentation/pages/game/game_page.dart';
-import 'package:learning_app/presentation/pages/space/space_page.dart';
 import 'package:learning_app/presentation/widgets/bottom_navigation_bar.dart';
 
 class AppRouter {
   static final router = GoRouter(
-    initialLocation: "/game",
+    initialLocation: "/home",
     routes: [
       StatefulShellRoute.indexedStack(
-        builder: (contex, state, navigationShell) {
+        builder: (context, state, navigationShell) {
           return Scaffold(
             body: navigationShell,
             bottomNavigationBar: AppBottomNavigationBar(
@@ -26,13 +27,26 @@ class AppRouter {
         branches: [
           StatefulShellBranch(
             routes: [
-              GoRoute(path: "/game", builder: (context, state) => GamePage()),
+              GoRoute(
+                path: "/home",
+                builder: (context, state) => const HomePage(),
+              ),
             ],
           ),
-          
           StatefulShellBranch(
             routes: [
-              GoRoute(path: "/space", builder: (context, state) => SpacePage()),
+              GoRoute(
+                path: "/decks",
+                builder: (context, state) => const DecksPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: "/game",
+                builder: (context, state) => const GamePage(),
+              ),
             ],
           ),
         ],

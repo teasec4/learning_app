@@ -4,23 +4,32 @@ class AppBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  AppBottomNavigationBar({required this.currentIndex, required this.onTap});
+  const AppBottomNavigationBar({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return NavigationBar(
       selectedIndex: currentIndex,
       onDestinationSelected: onTap,
-      destinations: [
+      destinations: const [
         NavigationDestination(
-          icon: const Icon(Icons.dashboard_outlined),
-          selectedIcon: const Icon(Icons.dashboard),
-          label: 'study',
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: 'Home',
         ),
         NavigationDestination(
-          icon: const Icon(Icons.fire_extinguisher_outlined),
-          selectedIcon: const Icon(Icons.fire_extinguisher),
-          label: 'space',
+          icon: Icon(Icons.folder_outlined),
+          selectedIcon: Icon(Icons.folder),
+          label: 'Decks',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.sports_esports_outlined),
+          selectedIcon: Icon(Icons.sports_esports),
+          label: 'Game',
         ),
       ],
     );
