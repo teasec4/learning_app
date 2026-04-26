@@ -84,17 +84,31 @@ class DecksPage extends StatelessWidget {
   }
 
   void _showCreateDialog(BuildContext context) {
-    final controller = TextEditingController();
+    final nameController = TextEditingController();
+    final descController = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Новая дека"),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: "Название деки",
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: "Название деки",
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: descController,
+              decoration: const InputDecoration(
+                hintText: "Описание (необязательно)",
+              ),
+              maxLines: 2,
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -103,8 +117,13 @@ class DecksPage extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () {
-              if (controller.text.trim().isNotEmpty) {
-                context.read<DeckProvider>().createDeck(controller.text.trim());
+              if (nameController.text.trim().isNotEmpty) {
+                context.read<DeckProvider>().createDeck(
+                  nameController.text.trim(),
+                  description: descController.text.trim().isEmpty
+                      ? null
+                      : descController.text.trim(),
+                );
                 Navigator.pop(ctx);
               }
             },
