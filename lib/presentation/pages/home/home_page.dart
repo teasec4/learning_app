@@ -9,7 +9,15 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
+      appBar: AppBar(
+        title: const Text("Home"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push("/settings"),
+          ),
+        ],
+      ),
       body: Consumer<HomeProvider>(
         builder: (context, provider, _) {
           return Center(

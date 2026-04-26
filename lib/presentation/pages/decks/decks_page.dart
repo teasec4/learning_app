@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:learning_app/presentation/providers/deck_provider.dart';
 import 'package:learning_app/presentation/pages/decks/deck_detail_page.dart';
 
@@ -12,6 +13,10 @@ class DecksPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Decks"),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push("/settings"),
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _showCreateDialog(context),

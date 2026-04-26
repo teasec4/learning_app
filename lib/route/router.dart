@@ -4,6 +4,7 @@ import 'package:learning_app/presentation/pages/home/home_page.dart';
 import 'package:learning_app/presentation/pages/decks/decks_page.dart';
 import 'package:learning_app/presentation/pages/decks/deck_detail_page.dart';
 import 'package:learning_app/presentation/pages/game/game_lobby_page.dart';
+import 'package:learning_app/presentation/pages/settings/settings_page.dart';
 import 'package:learning_app/presentation/widgets/bottom_navigation_bar.dart';
 
 class AppRouter {
@@ -55,6 +56,10 @@ class AppRouter {
       GoRoute(
         path: "/game/lobby",
         builder: (context, state) => const GameLobbyPage(),
+      ),
+      GoRoute(
+        path: "/settings",
+        builder: (context, state) => const SettingsPage(),
       ),
     ],
   );
