@@ -26,11 +26,6 @@ class AppBottomNavigationBar extends StatelessWidget {
           selectedIcon: Icon(Icons.folder),
           label: 'Decks',
         ),
-        NavigationDestination(
-          icon: Icon(Icons.sports_esports_outlined),
-          selectedIcon: Icon(Icons.sports_esports),
-          label: 'Game',
-        ),
       ],
     );
   }

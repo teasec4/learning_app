@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:learning_app/presentation/providers/home_provider.dart';
 
 class HomePage extends StatelessWidget {
@@ -70,20 +71,16 @@ class HomePage extends StatelessWidget {
 
                 const Spacer(flex: 1),
 
-                // Battle button
+                // Играть button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 48),
                   child: SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: FilledButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Режим дуэли — скоро!")),
-                        );
-                      },
-                      icon: const Icon(Icons.local_fire_department),
-                      label: const Text("Дуэль", style: TextStyle(fontSize: 18)),
+                      onPressed: () => context.push("/game/lobby"),
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: const Text("Играть", style: TextStyle(fontSize: 18)),
                     ),
                   ),
                 ),

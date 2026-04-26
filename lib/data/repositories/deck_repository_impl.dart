@@ -58,7 +58,7 @@ class DeckRepositoryImpl implements DeckRepository {
           .filter()
           .deckIdEqualTo(id)
           .findAll();
-      await _db.isar.wordCardModels.deleteAll(cards.map((c) => c.id));
+      await _db.isar.wordCardModels.deleteAll(cards.map((c) => c.id).toList());
       await _db.isar.deckModels.delete(id);
     });
   }

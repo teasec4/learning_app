@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:learning_app/presentation/pages/home/home_page.dart';
 import 'package:learning_app/presentation/pages/decks/decks_page.dart';
-import 'package:learning_app/presentation/pages/game/game_page.dart';
+import 'package:learning_app/presentation/pages/decks/deck_detail_page.dart';
+import 'package:learning_app/presentation/pages/game/game_lobby_page.dart';
 import 'package:learning_app/presentation/widgets/bottom_navigation_bar.dart';
 
 class AppRouter {
@@ -38,18 +39,22 @@ class AppRouter {
               GoRoute(
                 path: "/decks",
                 builder: (context, state) => const DecksPage(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: "/game",
-                builder: (context, state) => const GamePage(),
+                routes: [
+                  GoRoute(
+                    path: ":id",
+                    builder: (context, state) => DeckDetailPage(
+                      deckId: int.parse(state.pathParameters["id"]!),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: "/game/lobby",
+        builder: (context, state) => const GameLobbyPage(),
       ),
     ],
   );

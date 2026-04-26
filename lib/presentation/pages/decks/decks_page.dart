@@ -69,7 +69,7 @@ class DecksPage extends StatelessWidget {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => DeckDetailPage(deckId: deck.id, deckName: deck.name),
+                        builder: (_) => DeckDetailPage(deckId: deck.id),
                       ),
                     );
                   },

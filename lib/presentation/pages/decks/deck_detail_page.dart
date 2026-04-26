@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:learning_app/presentation/providers/deck_provider.dart';
 import 'package:learning_app/presentation/providers/word_card_provider.dart';
 import 'package:learning_app/presentation/pages/decks/add_word_page.dart';
 
 class DeckDetailPage extends StatefulWidget {
   final int deckId;
-  final String deckName;
 
   const DeckDetailPage({
     super.key,
     required this.deckId,
-    required this.deckName,
   });
 
   @override
@@ -28,9 +27,13 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final deckProvider = context.watch<DeckProvider>();
+    final deck = deckProvider.decks.where((d) => d.id == widget.deckId).firstOrNull;
+    final deckName = deck?.name ?? "Колода";
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.deckName),
+        title: Text(deckName),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -47,93 +50,75 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (provider.cards.isEmpty) {
+
+          final cards = provider.cards;
+          if (cards.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.abc,
-                      size: 64,
-                      color: Theme.of(context).colorScheme.outline),
-                  const SizedBox(height: 16),
                   Text(
-                    "Дека пуста",
-                    style: Theme.of(context).textTheme.titleMedium,
+                    "В этой колоде пока нет карточек",
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Нажми + чтобы добавить слово",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
+                  const SizedBox(height: 16),
+                  FilledButton.tonalIcon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => AddWordPage(deckId: widget.deckId),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text("Добавить карточку"),
                   ),
                 ],
               ),
             );
           }
+
           return ListView.builder(
-            padding: const EdgeInsets.all(8),
-            itemCount: provider.cards.length,
-            itemBuilder: (_, index) {
-              final card = provider.cards[index];
-              return Card(
+            itemCount: cards.length,
+            itemBuilder: (context, index) {
+              final card = cards[index];
+              return Dismissible(
+                key: ValueKey(card.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  color: Colors.red,
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                onDismissed: (_) {
+                  context.read<WordCardProvider>().deleteCard(card.id, widget.deckId);
+                },
                 child: ListTile(
                   title: Text(
                     card.word,
                     style: const TextStyle(
+                      fontFamily: 'Noto Sans SC',
                       fontSize: 18,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (card.pinyin != null)
-                        Text(
-                          card.pinyin!,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
-                        ),
-                      Text(card.translation),
-                    ],
+                  subtitle: Text(
+                    "${card.pinyin}\n${card.translation}",
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () => _confirmDelete(context, card.id, card.word),
-                  ),
-                  isThreeLine: card.pinyin != null,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => AddWordPage(deckId: widget.deckId),
+                      ),
+                    );
+                  },
                 ),
               );
             },
           );
         },
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, int cardId, String word) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Удалить карточку?"),
-        content: Text('«$word» будет удалена из деки.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Отмена"),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () {
-              context.read<WordCardProvider>().deleteCard(cardId, widget.deckId);
-              Navigator.pop(ctx);
-            },
-            child: const Text("Удалить"),
-          ),
-        ],
       ),
     );
   }

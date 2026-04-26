@@ -5,7 +5,7 @@ import 'package:learning_app/presentation/providers/word_card_provider.dart';
 class AddWordPage extends StatefulWidget {
   final int deckId;
 
-  const AddWordPage({super.key, required this.deckId});
+  const AddWordPage({super.key, this.deckId = 0});
 
   @override
   State<AddWordPage> createState() => _AddWordPageState();
