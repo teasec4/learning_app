@@ -25,34 +25,19 @@ class GameSession {
 }
 
 enum GameType {
-  flashcards,
-  duel,
-  cloze,
-  dragMatch;
+  duel;
 
   String get displayName {
     switch (this) {
-      case GameType.flashcards:
-        return "Флэшкарты";
       case GameType.duel:
-        return "Дуэль";
-      case GameType.cloze:
-        return "Вставь слово";
-      case GameType.dragMatch:
-        return "Найди пару";
+        return "Duel";
     }
   }
 
   String get icon {
     switch (this) {
-      case GameType.flashcards:
-        return "🃏";
       case GameType.duel:
         return "⚔️";
-      case GameType.cloze:
-        return "✍️";
-      case GameType.dragMatch:
-        return "🔗";
     }
   }
 }

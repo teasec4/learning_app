@@ -59,7 +59,7 @@ class GameSessionRepositoryImpl implements GameSessionRepository {
       deckName: model.deckName,
       gameType: GameType.values.firstWhere(
         (e) => e.name == model.gameType,
-        orElse: () => GameType.flashcards,
+        orElse: () => GameType.duel,
       ),
       status: GameStatus.values.firstWhere(
         (e) => e.name == model.status,

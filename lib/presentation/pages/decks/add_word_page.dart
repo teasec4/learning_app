@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:learning_app/presentation/providers/word_card_provider.dart';
 import 'package:learning_app/domain/entities/word_card.dart';
@@ -53,7 +54,7 @@ class _AddWordPageState extends State<AddWordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? "Редактировать" : "Новое слово"),
+        title: Text(_isEditing ? "Edit card" : "New word"),
         actions: [
           TextButton(
             onPressed: _save,
@@ -63,7 +64,7 @@ class _AddWordPageState extends State<AddWordPage> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : Text(_isEditing ? "Обновить" : "Сохранить"),
+                : Text(_isEditing ? "Update" : "Save"),
           ),
         ],
       ),
@@ -75,10 +76,11 @@ class _AddWordPageState extends State<AddWordPage> {
             TextFormField(
               controller: _wordController,
               decoration: const InputDecoration(
-                labelText: "Слово (иероглиф) *",
+                labelText: "Word (character) *",
                 hintText: "学习",
               ),
-              validator: (v) => v == null || v.trim().isEmpty ? "Обязательное поле" : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? "Required" : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -92,16 +94,17 @@ class _AddWordPageState extends State<AddWordPage> {
             TextFormField(
               controller: _translationController,
               decoration: const InputDecoration(
-                labelText: "Перевод *",
+                labelText: "Translation *",
                 hintText: "учить(ся), изучать",
               ),
-              validator: (v) => v == null || v.trim().isEmpty ? "Обязательное поле" : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? "Required" : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _contextController,
               decoration: const InputDecoration(
-                labelText: "Предложение-контекст",
+                labelText: "Sentence context",
                 hintText: "我在学习中文。",
               ),
               maxLines: 2,
@@ -109,7 +112,7 @@ class _AddWordPageState extends State<AddWordPage> {
             const SizedBox(height: 24),
 
             // Optional section
-            Text("Дополнительно",
+            Text("Optional",
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 )),
@@ -117,8 +120,8 @@ class _AddWordPageState extends State<AddWordPage> {
             TextFormField(
               controller: _notesController,
               decoration: const InputDecoration(
-                labelText: "Заметка",
-                hintText: "Часто путаю с ...",
+                labelText: "Notes",
+                hintText: "E.g. often confused with ...",
               ),
               maxLines: 2,
             ),
@@ -126,8 +129,8 @@ class _AddWordPageState extends State<AddWordPage> {
             TextFormField(
               controller: _sourceController,
               decoration: const InputDecoration(
-                labelText: "Источник",
-                hintText: "Учебник, Weibo, дорама ...",
+                labelText: "Source",
+                hintText: "Textbook, Weibo, drama ...",
               ),
             ),
           ],
@@ -186,13 +189,13 @@ class _AddWordPageState extends State<AddWordPage> {
       }
 
       if (mounted) {
-        Navigator.pop(context, true);
+        context.pop(true);
       }
     } catch (e) {
       if (mounted) {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Ошибка: $e")),
+          SnackBar(content: Text("Error: $e")),
         );
       }
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:learning_app/presentation/providers/home_provider.dart';
+import 'package:learning_app/route/router.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -11,12 +12,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Home"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push("/settings"),
-          ),
-        ],
+        // settings removed — no SettingsPage exists
       ),
       body: Consumer<HomeProvider>(
         builder: (context, provider, _) {
@@ -42,7 +38,7 @@ class HomePage extends StatelessWidget {
 
                 // Level + name
                 Text(
-                  "Ученик ${provider.level} уровня",
+                  "Level ${provider.level} Apprentice",
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -70,7 +66,7 @@ class HomePage extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        "${provider.xp} / ${provider.xpToNextLevel} XP · Всего карточек: ${provider.totalCards}",
+                        "${provider.xp} / ${provider.xpToNextLevel} XP · ${provider.totalCards} cards total",
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
@@ -79,16 +75,16 @@ class HomePage extends StatelessWidget {
 
                 const Spacer(flex: 1),
 
-                // Играть button
+                // Play button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 48),
                   child: SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: FilledButton.icon(
-                      onPressed: () => context.push("/game/lobby"),
+                      onPressed: () => context.push(AppRoutes.gameLobby),
                       icon: const Icon(Icons.play_arrow_rounded),
-                      label: const Text("Играть", style: TextStyle(fontSize: 18)),
+                      label: const Text("Play", style: TextStyle(fontSize: 18)),
                     ),
                   ),
                 ),

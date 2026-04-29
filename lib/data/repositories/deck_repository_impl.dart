@@ -83,11 +83,15 @@ class DeckRepositoryImpl implements DeckRepository {
   }
 
   DeckModel _toModel(Deck deck) {
-    return DeckModel()
-      ..id = deck.id
+    final model = DeckModel()
       ..name = deck.name
       ..description = deck.description
       ..createdAt = deck.createdAt
       ..updatedAt = deck.updatedAt;
+    // Only set id for existing decks (update case)
+    if (deck.id != 0) {
+      model.id = deck.id;
+    }
+    return model;
   }
 }

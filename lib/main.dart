@@ -4,7 +4,6 @@ import 'package:learning_app/service/app_services.dart';
 import 'package:learning_app/presentation/providers/deck_provider.dart';
 import 'package:learning_app/presentation/providers/word_card_provider.dart';
 import 'package:learning_app/presentation/providers/home_provider.dart';
-import 'package:learning_app/presentation/providers/game_session_provider.dart';
 import 'package:learning_app/route/router.dart';
 import 'package:learning_app/core/app_colors.dart';
 import 'package:learning_app/core/app_theme.dart';
@@ -26,9 +25,6 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => HomeProvider(appServices.wordCardRepository)..refresh(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => GameSessionProvider(appServices.gameSessionRepository)..loadSessions(),
         ),
       ],
       child: const MyApp(),
