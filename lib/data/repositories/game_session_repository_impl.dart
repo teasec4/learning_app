@@ -74,8 +74,7 @@ class GameSessionRepositoryImpl implements GameSessionRepository {
   }
 
   GameSessionModel _toModel(GameSession session) {
-    return GameSessionModel()
-      ..id = session.id
+    final model = GameSessionModel()
       ..deckId = session.deckId
       ..deckName = session.deckName
       ..gameType = session.gameType.name
@@ -85,5 +84,10 @@ class GameSessionRepositoryImpl implements GameSessionRepository {
       ..totalCards = session.totalCards
       ..startedAt = session.startedAt
       ..completedAt = session.completedAt;
+    // Only set id for existing sessions (update case)
+    if (session.id != 0) {
+      model.id = session.id;
+    }
+    return model;
   }
 }

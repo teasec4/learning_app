@@ -118,10 +118,10 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
                   onTap: () async {
                   final result = await context.push<bool>(
                     AppRoutes.editWordRoute(widget.deckId, card.id),
+                    extra: {'editCard': card},
                   );
                     if (result == true && mounted) {
-                      // ignore: use_build_context_synchronously
-                      context.read<DeckProvider>().refreshCardCounts();
+                      // Card count auto-syncs via Isar stream in DeckProvider
                     }
                   },
                 ),

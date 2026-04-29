@@ -3,14 +3,16 @@ import 'package:learning_app/domain/entities/deck.dart';
 import 'package:learning_app/domain/entities/game_mode.dart';
 
 enum GamePhase {
-  waitingForAnswer,
-  showingResult,
+  aiTurn,
+  playerTurn,
+  resultShown,
   gameOver,
 }
 
 class GameState {
   final List<WordCard> playerHand;
   final List<WordCard> remainingCards;
+  final int enemyHandSize;          // cards shown face-down for AI (cosmetic only)
   final WordCard? currentQuestion;
   final Deck deck;
   final GameMode mode;
@@ -29,6 +31,7 @@ class GameState {
   const GameState({
     required this.playerHand,
     required this.remainingCards,
+    this.enemyHandSize = 4,
     this.currentQuestion,
     required this.deck,
     required this.mode,
@@ -38,7 +41,7 @@ class GameState {
     this.turnNumber = 0,
     this.correctCount = 0,
     this.totalCards = 0,
-    this.phase = GamePhase.waitingForAnswer,
+    this.phase = GamePhase.aiTurn,
     this.turnStartTime,
     this.timerSecondsRemaining = 10,
     this.lastAnswerCorrect,
@@ -48,6 +51,7 @@ class GameState {
   GameState copyWith({
     List<WordCard>? playerHand,
     List<WordCard>? remainingCards,
+    int? enemyHandSize,
     WordCard? currentQuestion,
     Deck? deck,
     GameMode? mode,
@@ -68,6 +72,7 @@ class GameState {
     return GameState(
       playerHand: playerHand ?? this.playerHand,
       remainingCards: remainingCards ?? this.remainingCards,
+      enemyHandSize: enemyHandSize ?? this.enemyHandSize,
       currentQuestion: clearCurrentQuestion ? null : (currentQuestion ?? this.currentQuestion),
       deck: deck ?? this.deck,
       mode: mode ?? this.mode,

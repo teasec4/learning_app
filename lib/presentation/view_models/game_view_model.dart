@@ -52,6 +52,10 @@ class GameViewModel extends ChangeNotifier {
     );
   }
 
+  // ──────────────────────────────────────────────
+  // Game lifecycle
+  // ──────────────────────────────────────────────
+
   Future<void> startGame(Deck deck, GameMode mode) async {
     final cards = await _wordCardRepository.getAll(deck.id);
 
@@ -64,7 +68,7 @@ class GameViewModel extends ChangeNotifier {
       return;
     }
 
-    // Shuffle and deal
+    // Shuffle and deal 4 cards to player
     cards.shuffle(_random);
     final handSize = min(4, cards.length);
     final hand = cards.take(handSize).toList();
@@ -78,7 +82,8 @@ class GameViewModel extends ChangeNotifier {
       playerHp: 10,
       aiHp: 10,
       totalCards: cards.length,
-      phase: GamePhase.waitingForAnswer,
+      phase: GamePhase.aiTurn,
+      enemyHandSize: min(4, cards.length),
     );
 
     // Create GameSession in DB
@@ -97,8 +102,8 @@ class GameViewModel extends ChangeNotifier {
     final sessionId = await _gameSessionRepository.create(_currentSession!);
     _currentSession = GameSession(
       id: sessionId,
-      deckId: deck.id,
-      deckName: deck.name,
+      deckId: _currentSession!.deckId,
+      deckName: _currentSession!.deckName,
       gameType: GameType.duel,
       status: GameStatus.inProgress,
       score: 0,
@@ -107,13 +112,58 @@ class GameViewModel extends ChangeNotifier {
       startedAt: now,
     );
 
-    _pickQuestion();
-    _startTimer();
+    // Start first turn: AI reveals the question
+    _startAiTurn();
+  }
+
+  // ──────────────────────────────────────────────
+  // AI turn — reveals a question card (~1.5s)
+  // ──────────────────────────────────────────────
+
+  void _startAiTurn() {
+    if (_disposed) return;
+
+    final hand = _state.playerHand;
+    if (hand.isEmpty) {
+      _endGame(playerWon: true);
+      return;
+    }
+
+    // Pick a random card from player's hand to be the target question
+    final target = hand[_random.nextInt(hand.length)];
+
+    _state = _state.copyWith(
+      phase: GamePhase.aiTurn,
+      currentQuestion: target,
+      turnNumber: _state.turnNumber + 1,
+    );
     notifyListeners();
+
+    // After 1.5s, transition to player's turn
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!_disposed) _startPlayerTurn();
+    });
+  }
+
+  // ──────────────────────────────────────────────
+  // Player turn — answer with timer
+  // ──────────────────────────────────────────────
+
+  void _startPlayerTurn() {
+    if (_disposed) return;
+    if (_state.phase == GamePhase.gameOver) return;
+
+    _state = _state.copyWith(
+      phase: GamePhase.playerTurn,
+      timerSecondsRemaining: 10,
+      turnStartTime: DateTime.now(),
+    );
+    notifyListeners();
+    _startTimer();
   }
 
   void selectCard(WordCard card) {
-    if (_state.phase != GamePhase.waitingForAnswer || _disposed) return;
+    if (_state.phase != GamePhase.playerTurn || _disposed) return;
     if (_state.currentQuestion == null) return;
 
     _timer?.cancel();
@@ -122,62 +172,106 @@ class GameViewModel extends ChangeNotifier {
     final isCorrect = card.word == _state.currentQuestion!.word;
 
     if (isCorrect) {
-      final damage = _calculateDamage(elapsed);
-      final newAiHp = (_state.aiHp - damage).clamp(0, 10);
-
-      // Remove the used card from hand
-      final updatedHand = List<WordCard>.from(_state.playerHand)
-        ..removeWhere((c) => c.word == card.word);
-
-      _state = _state.copyWith(
-        playerHand: updatedHand,
-        score: _state.score + damage,
-        correctCount: _state.correctCount + 1,
-        aiHp: newAiHp,
-        phase: GamePhase.showingResult,
-        lastAnswerCorrect: true,
-        resultMessage: '+$damage HP! ${card.word}',
-      );
-      notifyListeners();
-
-      if (newAiHp <= 0) {
-        _endGame(playerWon: true);
-        return;
-      }
-
-      Future.delayed(const Duration(milliseconds: 1200), () {
-        if (!_disposed) _advanceTurn();
-      });
+      _handleCorrectAnswer(card, elapsed);
     } else {
-      final newHp = (_state.playerHp - 1).clamp(0, 10);
-
-      _state = _state.copyWith(
-        playerHp: newHp,
-        phase: GamePhase.showingResult,
-        lastAnswerCorrect: false,
-        resultMessage: 'Wrong! It was ${_state.currentQuestion!.word}',
-      );
-      notifyListeners();
-
-      if (newHp <= 0) {
-        _endGame(playerWon: false);
-        return;
-      }
-
-      Future.delayed(const Duration(milliseconds: 1500), () {
-        if (!_disposed) _advanceTurn();
-      });
+      _handleWrongAnswer();
     }
   }
 
+  void _handleCorrectAnswer(WordCard card, int elapsed) {
+    final damage = _calculateDamage(elapsed);
+    final newAiHp = (_state.aiHp - damage).clamp(0, 10);
+
+    // Remove the used card from hand
+    final updatedHand = List<WordCard>.from(_state.playerHand)
+      ..removeWhere((c) => c.word == card.word);
+
+    _state = _state.copyWith(
+      playerHand: updatedHand,
+      score: _state.score + damage,
+      correctCount: _state.correctCount + 1,
+      aiHp: newAiHp,
+      phase: GamePhase.resultShown,
+      lastAnswerCorrect: true,
+      resultMessage: '-$damage HP',
+    );
+    notifyListeners();
+
+    if (newAiHp <= 0) {
+      Future.delayed(const Duration(milliseconds: 1200), () {
+        if (!_disposed) _endGame(playerWon: true);
+      });
+      return;
+    }
+
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (!_disposed) _advanceTurn();
+    });
+  }
+
+  void _handleWrongAnswer() {
+    final newHp = (_state.playerHp - 1).clamp(0, 10);
+
+    _state = _state.copyWith(
+      playerHp: newHp,
+      phase: GamePhase.resultShown,
+      lastAnswerCorrect: false,
+      resultMessage: 'Wrong!',
+    );
+    notifyListeners();
+
+    if (newHp <= 0) {
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (!_disposed) _endGame(playerWon: false);
+      });
+      return;
+    }
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!_disposed) _advanceTurn();
+    });
+  }
+
+  void _onTimeout() {
+    if (_state.phase != GamePhase.playerTurn || _disposed) return;
+
+    final newHp = (_state.playerHp - 1).clamp(0, 10);
+    _state = _state.copyWith(
+      playerHp: newHp,
+      phase: GamePhase.resultShown,
+      lastAnswerCorrect: false,
+      resultMessage: "Time's up! It was ${_state.currentQuestion?.word ?? '?'}",
+    );
+    notifyListeners();
+
+    if (newHp <= 0) {
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (!_disposed) _endGame(playerWon: false);
+      });
+      return;
+    }
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!_disposed) _advanceTurn();
+    });
+  }
+
+  // ──────────────────────────────────────────────
+  // Advance to next turn
+  // ──────────────────────────────────────────────
+
   void _advanceTurn() {
     if (_disposed) return;
+    if (_state.phase == GamePhase.gameOver) return;
+    // Safety: only advance during resultShown — prevents stale
+    // Future.delayed calls from competing with the timer
+    if (_state.phase != GamePhase.resultShown) return;
 
-    // Draw one card from remaining pile
+    // Draw one card from remaining pile (max hand size = 4)
     final remaining = List<WordCard>.from(_state.remainingCards);
-    final hand = List<WordCard>.from(_state.playerHand);
+    var hand = List<WordCard>.from(_state.playerHand);
 
-    if (remaining.isNotEmpty) {
+    if (hand.length < 4 && remaining.isNotEmpty) {
       hand.add(remaining.removeAt(0));
     }
 
@@ -190,24 +284,17 @@ class GameViewModel extends ChangeNotifier {
     _state = _state.copyWith(
       playerHand: hand,
       remainingCards: remaining,
-      turnNumber: _state.turnNumber + 1,
       clearCurrentQuestion: true,
       clearLastAnswer: true,
     );
 
-    _pickQuestion();
-    _startTimer();
-    notifyListeners();
+    // Start next AI turn
+    _startAiTurn();
   }
 
-  void _pickQuestion() {
-    final hand = _state.playerHand;
-    if (hand.isEmpty) return;
-
-    // Pick a random card from hand to be the target question
-    final target = hand[_random.nextInt(hand.length)];
-    _state = _state.copyWith(currentQuestion: target);
-  }
+  // ──────────────────────────────────────────────
+  // Damage calculation
+  // ──────────────────────────────────────────────
 
   int _calculateDamage(int elapsedSeconds) {
     // Linear damage: faster → more damage
@@ -218,10 +305,6 @@ class GameViewModel extends ChangeNotifier {
   }
 
   void _startTimer() {
-    _state = _state.copyWith(
-      timerSecondsRemaining: 10,
-      turnStartTime: DateTime.now(),
-    );
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_disposed) {
@@ -234,45 +317,26 @@ class GameViewModel extends ChangeNotifier {
 
       if (remaining <= 0) {
         timer.cancel();
-        _onTimeout();
+        if (_state.phase == GamePhase.playerTurn) {
+          _onTimeout();
+        }
       }
     });
   }
 
-  void _onTimeout() {
-    if (_state.phase != GamePhase.waitingForAnswer || _disposed) return;
-
-    final newHp = (_state.playerHp - 1).clamp(0, 10);
-    _state = _state.copyWith(
-      playerHp: newHp,
-      phase: GamePhase.showingResult,
-      lastAnswerCorrect: false,
-      resultMessage: 'Time\'s up! It was ${_state.currentQuestion?.word ?? '?'}',
-    );
-    notifyListeners();
-
-    if (newHp <= 0) {
-      _endGame(playerWon: false);
-      return;
-    }
-
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (!_disposed) _advanceTurn();
-    });
-  }
+  // ──────────────────────────────────────────────
+  // End game
+  // ──────────────────────────────────────────────
 
   void _endGame({required bool playerWon}) {
     _timer?.cancel();
 
     _state = _state.copyWith(
       phase: GamePhase.gameOver,
-      resultMessage: playerWon
-          ? 'You Win! 🎉'
-          : 'You Lose! 😵',
+      resultMessage: playerWon ? 'You Win! 🎉' : 'You Lose! 😵',
     );
     notifyListeners();
 
-    // Save final GameSession in DB
     if (_currentSession != null) {
       _gameSessionRepository.update(
         GameSession(

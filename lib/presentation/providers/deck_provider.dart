@@ -1,14 +1,28 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:learning_app/data/models/deck_model.dart';
+import 'package:learning_app/data/models/word_card_model.dart';
 import 'package:learning_app/domain/entities/deck.dart';
 import 'package:learning_app/domain/repositories/deck_repository.dart';
+import 'package:learning_app/service/app_services.dart';
 
 class DeckProvider extends ChangeNotifier {
   final DeckRepository _repository;
+  StreamSubscription<void>? _deckSub;
+  StreamSubscription<void>? _cardSub;
 
   List<Deck> _decks = [];
   bool _isLoading = false;
 
-  DeckProvider(this._repository);
+  DeckProvider(this._repository) {
+    _setupWatchers();
+  }
+
+  void _setupWatchers() {
+    final db = AppServices().database;
+    _deckSub = db.isar.deckModels.watchLazy().listen((_) => loadDecks());
+    _cardSub = db.isar.wordCardModels.watchLazy().listen((_) => loadDecks());
+  }
 
   List<Deck> get decks => _decks;
   bool get isLoading => _isLoading;
@@ -55,8 +69,10 @@ class DeckProvider extends ChangeNotifier {
     await loadDecks();
   }
 
-  Future<void> refreshCardCounts() async {
-    _decks = await _repository.getAll();
-    notifyListeners();
+  @override
+  void dispose() {
+    _deckSub?.cancel();
+    _cardSub?.cancel();
+    super.dispose();
   }
 }

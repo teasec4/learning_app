@@ -17,15 +17,14 @@ No game tab in bottom nav. The game lobby is accessed from the HomePage.
 ## Route Structure
 
 ```
-/home                         → HomePage (tab 0)
-/decks                        → DecksPage (tab 1)
-/decks/:id                    → DeckDetailPage
-
-/game/lobby                   → GameLobbyPage
-/game/battle/:deckId          → GameBattlePage (full-screen, no bottom nav)
-
-/decks/:deckId/add-word       → AddWordPage (create mode)
-/decks/:deckId/edit-word/:wordId  → AddWordPage (edit mode)
+|/home                         → HomePage (tab 0)
+|  /home/lobby                 → GameLobbyPage
+|/decks                        → DecksPage (tab 1)
+|/decks/:id                    → DeckDetailPage
+|/decks/:id/add-word           → AddWordPage (create mode)
+|/decks/:id/edit-word/:wordId  → AddWordPage (edit mode)
+|
+|/game/battle/:deckId          → GameBattlePage (full-screen, no bottom nav)
 ```
 
 ## Navigation Flows
@@ -76,7 +75,7 @@ class AppRoutes {
   static const String decks = '/decks';
   static const String addWord = '/decks/:deckId/add-word';
   static const String editWord = '/decks/:deckId/edit-word/:wordId';
-  static const String gameLobby = '/game/lobby';
+  static const String gameLobby = '/home/lobby';
   static const String gameBattleRoute = '/game/battle/:deckId';
 
   static String deckDetail(int id) => '/decks/$id';

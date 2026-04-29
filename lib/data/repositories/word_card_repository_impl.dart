@@ -68,8 +68,7 @@ class WordCardRepositoryImpl implements WordCardRepository {
   }
 
   WordCardModel _toModel(WordCard card) {
-    return WordCardModel()
-      ..id = card.id
+    final model = WordCardModel()
       ..deckId = card.deckId
       ..word = card.word
       ..pinyin = card.pinyin
@@ -78,5 +77,10 @@ class WordCardRepositoryImpl implements WordCardRepository {
       ..notes = card.notes
       ..source = card.source
       ..createdAt = card.createdAt;
+    // Only set id for existing cards (update case)
+    if (card.id != 0) {
+      model.id = card.id;
+    }
+    return model;
   }
 }

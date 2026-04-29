@@ -6,6 +6,7 @@ import 'package:learning_app/presentation/pages/game/game_battle_page.dart';
 import 'package:learning_app/presentation/pages/decks/add_word_page.dart';
 import 'package:learning_app/presentation/widgets/bottom_navigation_bar.dart';
 import 'package:learning_app/domain/entities/game_mode.dart';
+import 'package:learning_app/domain/entities/word_card.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -90,8 +91,13 @@ class AppRouter {
                         path: 'edit-word/:wordId',
                         builder: (context, state) {
                           final deckId = int.parse(state.pathParameters['id']!);
-                          // TODO: pass editCard via extra when implementing
-                          return AddWordPage(deckId: deckId);
+                          final editCard = state.extra is Map
+                              ? (state.extra as Map)['editCard'] as WordCard?
+                              : null;
+                          return AddWordPage(
+                            deckId: deckId,
+                            editCard: editCard,
+                          );
                         },
                       ),
                     ],
