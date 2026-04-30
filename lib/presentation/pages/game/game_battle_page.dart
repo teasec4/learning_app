@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:learning_app/core/app_theme.dart';
 import 'package:learning_app/domain/entities/word_card.dart';
 import 'package:learning_app/domain/entities/deck.dart';
 import 'package:learning_app/domain/entities/game_mode.dart';
@@ -217,19 +218,27 @@ class _HpBar extends StatelessWidget {
                 color: color,
               ),
               const SizedBox(width: 4),
-              Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              Text(label,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 12)),
               const SizedBox(width: 8),
-              Text('$hp / $maxHp', style: TextStyle(fontSize: 12, color: color)),
+              Text('$hp / $maxHp',
+                  style: TextStyle(fontSize: 12, color: color)),
             ],
           ),
           const SizedBox(height: 2),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: fraction,
-              backgroundColor: color.withAlpha(40),
-              valueColor: AlwaysStoppedAnimation(color),
-              minHeight: 10,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: fraction, end: fraction),
+              duration: AppTheme.animNormal,
+              curve: AppTheme.animCurve,
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                backgroundColor: color.withAlpha(40),
+                valueColor: AlwaysStoppedAnimation(color),
+                minHeight: 10,
+              ),
             ),
           ),
         ],
@@ -277,11 +286,16 @@ class _TimerBar extends StatelessWidget {
           const SizedBox(height: 2),
           ClipRRect(
             borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(
-              value: fraction,
-              backgroundColor: color.withAlpha(30),
-              valueColor: AlwaysStoppedAnimation(color),
-              minHeight: 6,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: fraction, end: fraction),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                backgroundColor: color.withAlpha(30),
+                valueColor: AlwaysStoppedAnimation(color),
+                minHeight: 6,
+              ),
             ),
           ),
         ],
@@ -404,42 +418,59 @@ class _QuestionArea extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ── Phase indicator ──
-          if (state.phase == GamePhase.aiTurn)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "AI's turn...",
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-              ),
+          // ── Turn phase indicator with crossfade ──
+          SizedBox(
+            height: 24,
+            child: AnimatedSwitcher(
+              duration: AppTheme.animFast,
+              switchInCurve: AppTheme.animCurve,
+              switchOutCurve: AppTheme.animCurve,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+              child: state.phase == GamePhase.aiTurn
+                  ? Padding(
+                      key: const ValueKey('ai'),
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "AI's turn...",
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : state.phase == GamePhase.playerTurn
+                      ? Padding(
+                          key: const ValueKey('player'),
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            'Your turn! Pick the matching card.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.secondary,
+                            ),
+                          ),
+                        )
+                      : const SizedBox(key: ValueKey('empty')),
             ),
-          if (state.phase == GamePhase.playerTurn)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                'Your turn! Pick the matching card.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.secondary,
-                ),
-              ),
-            ),
+          ),
 
           // ── Question card with animation ──
           AnimatedSwitcher(
@@ -651,33 +682,74 @@ class _PlayerHand extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: SizedBox(
         height: 150,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final interCard = 8.0; // gap between cards
-            final cardWidth = ((constraints.maxWidth - interCard * (cards.length - 1)) / cards.length)
-                .clamp(60.0, 100.0);
-
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: cards.map((card) {
-                final index = cards.indexOf(card);
-                return SizedBox(
-                  width: cardWidth,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: _GameCardWidget(
-                      card: card,
-                      index: index,
-                      isTappable: phase == GamePhase.playerTurn,
-                      onTap: () => onCardTap(card),
-                    ),
-                  ),
-                );
-              }).toList(),
+        child: AnimatedSwitcher(
+          duration: AppTheme.animNormal,
+          switchInCurve: AppTheme.animCurve,
+          switchOutCurve: AppTheme.animCurve,
+          transitionBuilder: (child, animation) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.4),
+                end: Offset.zero,
+              ).animate(animation),
+              child: FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
             );
           },
+          child: _HandContent(
+            key: ValueKey(cards.hashCode),
+            cards: cards,
+            phase: phase,
+            onCardTap: onCardTap,
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _HandContent extends StatelessWidget {
+  final List<WordCard> cards;
+  final GamePhase phase;
+  final ValueChanged<WordCard> onCardTap;
+
+  const _HandContent({
+    super.key,
+    required this.cards,
+    required this.phase,
+    required this.onCardTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final interCard = 8.0;
+        final cardWidth =
+            ((constraints.maxWidth - interCard * (cards.length - 1)) / cards.length)
+                .clamp(60.0, 100.0);
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: cards.map((card) {
+            final index = cards.indexOf(card);
+            return SizedBox(
+              width: cardWidth,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: _GameCardWidget(
+                  card: card,
+                  index: index,
+                  isTappable: phase == GamePhase.playerTurn,
+                  onTap: () => onCardTap(card),
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 }
