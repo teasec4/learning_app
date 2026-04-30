@@ -20,6 +20,28 @@ class HomePage extends StatelessWidget {
       body: Consumer2<HomeProvider, DeckProvider>(
         builder: (context, home, decks, _) {
           final theme = Theme.of(context);
+
+          // ── Loading state ──
+          if (home.isLoading || (decks.isLoading && decks.decks.isEmpty)) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(height: AppTheme.spacingLg),
+                  Text(
+                    'Loading your stats...',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
           final cardsTotal = home.totalCards;
           final decksTotal = decks.decks.length;
           final level = home.level;
@@ -186,11 +208,8 @@ class HomePage extends StatelessWidget {
                 height: 48,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    // Switch to Decks tab via index 1
-                    context.goNamed(
-                      AppRoutes.home,
-                      queryParameters: {'tab': '1'},
-                    );
+                    // Switch to Decks tab (index 1)
+                    StatefulNavigationShell.of(context).goBranch(1);
                   },
                   icon: const Icon(Icons.folder_open_rounded),
                   label: const Text("Browse decks"),
