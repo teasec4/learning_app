@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
+import 'package:learning_app/core/app_theme.dart';
 import 'package:learning_app/presentation/providers/word_card_provider.dart';
 import 'package:learning_app/domain/entities/word_card.dart';
 
@@ -52,6 +54,8 @@ class _AddWordPageState extends State<AddWordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? "Edit card" : "New word"),
@@ -71,68 +75,147 @@ class _AddWordPageState extends State<AddWordPage> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppTheme.spacingLg),
           children: [
+            // ── Required fields section ──
+            // Word — prominent field
+            Text(
+              "Word",
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingSm),
             TextFormField(
               controller: _wordController,
+              style: AppTheme.chineseStyle(
+                size: 22,
+                weight: FontWeight.w500,
+              ),
               decoration: const InputDecoration(
-                labelText: "Word (character) *",
                 hintText: "学习",
+                hintStyle: TextStyle(fontSize: 22),
               ),
               validator: (v) =>
                   v == null || v.trim().isEmpty ? "Required" : null,
+              autofocus: !_isEditing,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.spacingLg),
+
+            // Pinyin
+            Text(
+              "Pinyin",
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingSm),
             TextFormField(
               controller: _pinyinController,
+              style: AppTheme.pinyinStyle(),
               decoration: const InputDecoration(
-                labelText: 'Pinyin',
                 hintText: "xuéxí",
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.spacingLg),
+
+            // Translation
+            Text(
+              "Translation",
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingSm),
             TextFormField(
               controller: _translationController,
               decoration: const InputDecoration(
-                labelText: "Translation *",
-                hintText: 'to study, learn',
+                hintText: "to study, learn",
               ),
               validator: (v) =>
                   v == null || v.trim().isEmpty ? "Required" : null,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.spacingLg),
+
+            // Context sentence
+            Text(
+              "Sentence context",
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingSm),
             TextFormField(
               controller: _contextController,
+              style: AppTheme.chineseStyle(size: 16),
               decoration: const InputDecoration(
-                labelText: "Sentence context",
                 hintText: "我在学习中文。",
+                hintStyle: TextStyle(fontSize: 16),
               ),
               maxLines: 2,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppTheme.spacingXl),
 
-            // Optional section
-            Text("Optional",
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                )),
-            const SizedBox(height: 8),
+            // ── Divider + Optional section ──
+            Row(
+              children: [
+                Expanded(
+                  child: Divider(
+                    color: theme.colorScheme.outlineVariant,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingMd,
+                  ),
+                  child: Text(
+                    "Optional",
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Divider(
+                    color: theme.colorScheme.outlineVariant,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppTheme.spacingXl),
+
+            // Notes
+            Text(
+              "Notes",
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingSm),
             TextFormField(
               controller: _notesController,
               decoration: const InputDecoration(
-                labelText: "Notes",
                 hintText: "E.g. often confused with ...",
               ),
               maxLines: 2,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.spacingLg),
+
+            // Source
+            Text(
+              "Source",
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingSm),
             TextFormField(
               controller: _sourceController,
               decoration: const InputDecoration(
-                labelText: "Source",
                 hintText: "Textbook, Weibo, drama ...",
               ),
             ),
+            const SizedBox(height: AppTheme.spacingXl),
           ],
         ),
       ),
