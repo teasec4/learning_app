@@ -24,7 +24,10 @@ void main() async {
           create: (_) => WordCardProvider(appServices.wordCardRepository),
         ),
         ChangeNotifierProvider(
-          create: (_) => HomeProvider(appServices.wordCardRepository)..refresh(),
+          create: (_) => HomeProvider(
+            appServices.wordCardRepository,
+            appServices.gameSessionRepository,
+          )..refresh(),
         ),
       ],
       child: const MyApp(),

@@ -47,7 +47,7 @@ class HomePage extends StatelessWidget {
           final level = home.level;
           final xp = home.xp;
           final xpToNext = home.xpToNextLevel;
-          final progress = cardsTotal > 0 ? xp / xpToNext : 0.0;
+          final progress = home.xpToNextLevel > 0 ? home.xpInLevel / home.xpToNextLevel : 0.0;
 
           return ListView(
             padding: const EdgeInsets.all(AppTheme.spacingLg),
@@ -169,7 +169,7 @@ class HomePage extends StatelessWidget {
                     child: _StatCard(
                       icon: Icons.sports_esports_rounded,
                       label: "Games",
-                      value: "0", // TODO Phase 8: real game count
+                      value: "${home.totalGames}",
                       color: AppColors.deckColor(2), // violet
                     ),
                   ),
