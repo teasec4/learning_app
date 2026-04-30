@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:learning_app/core/app_theme.dart';
 import 'package:learning_app/domain/entities/word_card.dart';
 import 'package:learning_app/domain/entities/deck.dart';
 import 'package:learning_app/domain/entities/game_mode.dart';
@@ -229,16 +228,11 @@ class _HpBar extends StatelessWidget {
           const SizedBox(height: 2),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: fraction, end: fraction),
-              duration: AppTheme.animNormal,
-              curve: AppTheme.animCurve,
-              builder: (context, value, _) => LinearProgressIndicator(
-                value: value,
-                backgroundColor: color.withAlpha(40),
-                valueColor: AlwaysStoppedAnimation(color),
-                minHeight: 10,
-              ),
+            child: LinearProgressIndicator(
+              value: fraction,
+              backgroundColor: color.withAlpha(40),
+              valueColor: AlwaysStoppedAnimation(color),
+              minHeight: 10,
             ),
           ),
         ],
@@ -286,16 +280,11 @@ class _TimerBar extends StatelessWidget {
           const SizedBox(height: 2),
           ClipRRect(
             borderRadius: BorderRadius.circular(3),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: fraction, end: fraction),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              builder: (context, value, _) => LinearProgressIndicator(
-                value: value,
-                backgroundColor: color.withAlpha(30),
-                valueColor: AlwaysStoppedAnimation(color),
-                minHeight: 6,
-              ),
+            child: LinearProgressIndicator(
+              value: fraction,
+              backgroundColor: color.withAlpha(30),
+              valueColor: AlwaysStoppedAnimation(color),
+              minHeight: 6,
             ),
           ),
         ],
@@ -418,238 +407,214 @@ class _QuestionArea extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ── Turn phase indicator with crossfade ──
-          SizedBox(
-            height: 24,
-            child: AnimatedSwitcher(
-              duration: AppTheme.animFast,
-              switchInCurve: AppTheme.animCurve,
-              switchOutCurve: AppTheme.animCurve,
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: child,
-                );
-              },
-              child: state.phase == GamePhase.aiTurn
-                  ? Padding(
-                      key: const ValueKey('ai'),
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: theme.colorScheme.primary,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            "AI's turn...",
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : state.phase == GamePhase.playerTurn
-                      ? Padding(
-                          key: const ValueKey('player'),
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            'Your turn! Pick the matching card.',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.secondary,
-                            ),
-                          ),
-                        )
-                      : const SizedBox(key: ValueKey('empty')),
+          // ── Phase indicator ──
+          if (state.phase == GamePhase.aiTurn)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "AI's turn...",
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          if (state.phase == GamePhase.playerTurn)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                'Your turn! Pick the matching card.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.secondary,
+                ),
+              ),
+            ),
 
-          // ── Question card with animation ──
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: question != null
-                ? Padding(
-                    key: ValueKey(question.word + state.turnNumber.toString()),
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Result message
-                        if (state.phase == GamePhase.resultShown && state.resultMessage != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 200),
-                              child: Text(
-                                state.resultMessage!,
-                                key: ValueKey(state.resultMessage),
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
+          // ── Question card ──
+          if (question != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Result message
+                  if (state.phase == GamePhase.resultShown && state.resultMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        state.resultMessage!,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+
+                  // Enemy question card (same style as player cards but red)
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 260),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (state.phase == GamePhase.resultShown
+                                  ? Colors.red.shade300
+                                  : Colors.red.shade800)
+                              .withAlpha(40),
+                          blurRadius: 12,
+                          spreadRadius: 1,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withAlpha(50),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                          color: state.phase == GamePhase.resultShown
+                              ? Colors.red.shade300
+                              : Colors.red.shade700,
+                            width: state.phase == GamePhase.resultShown ? 2.0 : 1.0,
                           ),
-
-                        // Enemy question card (same style as player cards but red)
-                        Container(
-                          constraints: const BoxConstraints(maxWidth: 260),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: (state.phase == GamePhase.resultShown
-                                        ? Colors.red.shade300
-                                        : Colors.red.shade800)
-                                    .withAlpha(40),
-                                blurRadius: 12,
-                                spreadRadius: 1,
-                              ),
-                              BoxShadow(
-                                color: Colors.black.withAlpha(50),
-                                blurRadius: 12,
-                                offset: const Offset(0, 6),
-                              ),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.red.shade800,
+                              Colors.red.shade900,
                             ],
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // ── Top accent bar ──
+                            Container(
+                              height: 28,
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                color: state.phase == GamePhase.resultShown
-                                    ? Colors.red.shade300
-                                    : Colors.red.shade700,
-                                  width: state.phase == GamePhase.resultShown ? 2.0 : 1.0,
-                                ),
                                 gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
                                   colors: [
-                                    Colors.red.shade800,
-                                    Colors.red.shade900,
+                                    Colors.red.shade700.withAlpha(180),
+                                    Colors.red.shade800.withAlpha(100),
                                   ],
                                 ),
                               ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
+                              child: Row(
                                 children: [
-                                  // ── Top accent bar ──
+                                  const SizedBox(width: 8),
                                   Container(
-                                    height: 28,
+                                    width: 18,
+                                    height: 18,
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.red.shade700.withAlpha(180),
-                                          Colors.red.shade800.withAlpha(100),
-                                        ],
+                                      shape: BoxShape.circle,
+                                      color: Colors.white.withAlpha(40),
+                                      border: Border.all(
+                                        color: Colors.white.withAlpha(80),
+                                        width: 1,
                                       ),
                                     ),
-                                    child: Row(
-                                      children: [
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          width: 18,
-                                          height: 18,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white.withAlpha(40),
-                                            border: Border.all(
-                                              color: Colors.white.withAlpha(80),
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              '⚔',
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: Colors.white.withAlpha(180),
-                                              ),
-                                            ),
-                                          ),
+                                    child: Center(
+                                      child: Text(
+                                        '⚔',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.white.withAlpha(180),
                                         ),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            'ENEMY',
-                                            style: TextStyle(
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white.withAlpha(120),
-                                              letterSpacing: 2,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
-
-                                  // ── Card body ──
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 16,
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Mode label
-                                        Text(
-                                          state.mode.displayName,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: Colors.white.withAlpha(100),
-                                            letterSpacing: 1.2,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-
-                                        // The question (English translation)
-                                        Text(
-                                          question.translation,
-                                          style: const TextStyle(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                          maxLines: 2,
-                                        ),
-
-                                        // Bottom accent line
-                                        const SizedBox(height: 8),
-                                        Container(
-                                          height: 2,
-                                          width: 32,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withAlpha(40),
-                                            borderRadius: BorderRadius.circular(1),
-                                          ),
-                                        ),
-                                      ],
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      'ENEMY',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white.withAlpha(120),
+                                        letterSpacing: 2,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
+
+                            // ── Card body ──
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Mode label
+                                  Text(
+                                    state.mode.displayName,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.white.withAlpha(100),
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+
+                                  // The question (English translation)
+                                  Text(
+                                    question.translation,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                  ),
+
+                                  // Bottom accent line
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    height: 2,
+                                    width: 32,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withAlpha(40),
+                                      borderRadius: BorderRadius.circular(1),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  )
-                : const CircularProgressIndicator(),
-          ),
+                  ),
+                ],
+              ),
+            )
+          else
+            const CircularProgressIndicator(),
         ],
       ),
     );
@@ -682,81 +647,41 @@ class _PlayerHand extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: SizedBox(
         height: 150,
-        child: AnimatedSwitcher(
-          duration: AppTheme.animNormal,
-          switchInCurve: AppTheme.animCurve,
-          switchOutCurve: AppTheme.animCurve,
-          transitionBuilder: (child, animation) {
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.4),
-                end: Offset.zero,
-              ).animate(animation),
-              child: FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final interCard = 8.0;
+            final cardWidth =
+                ((constraints.maxWidth - interCard * (cards.length - 1)) / cards.length)
+                    .clamp(72.0, 100.0);
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: cards.map((card) {
+                final index = cards.indexOf(card);
+                return SizedBox(
+                  width: cardWidth,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: _GameCardWidget(
+                      card: card,
+                      index: index,
+                      isTappable: phase == GamePhase.playerTurn,
+                      onTap: () => onCardTap(card),
+                    ),
+                  ),
+                );
+              }).toList(),
             );
           },
-          child: _HandContent(
-            key: ValueKey(cards.hashCode),
-            cards: cards,
-            phase: phase,
-            onCardTap: onCardTap,
-          ),
         ),
       ),
     );
   }
 }
 
-class _HandContent extends StatelessWidget {
-  final List<WordCard> cards;
-  final GamePhase phase;
-  final ValueChanged<WordCard> onCardTap;
+// ── Individual Game Card ──
 
-  const _HandContent({
-    super.key,
-    required this.cards,
-    required this.phase,
-    required this.onCardTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final interCard = 8.0;
-        final cardWidth =
-            ((constraints.maxWidth - interCard * (cards.length - 1)) / cards.length)
-                .clamp(60.0, 100.0);
-
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: cards.map((card) {
-            final index = cards.indexOf(card);
-            return SizedBox(
-              width: cardWidth,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: _GameCardWidget(
-                  card: card,
-                  index: index,
-                  isTappable: phase == GamePhase.playerTurn,
-                  onTap: () => onCardTap(card),
-                ),
-              ),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-}
-
-// ── Individual Game Card (Hearthstone-style) ──
-
-class _GameCardWidget extends StatefulWidget {
+class _GameCardWidget extends StatelessWidget {
   final WordCard card;
   final int index;
   final bool isTappable;
@@ -770,133 +695,93 @@ class _GameCardWidget extends StatefulWidget {
   });
 
   @override
-  State<_GameCardWidget> createState() => _GameCardWidgetState();
-}
-
-class _GameCardWidgetState extends State<_GameCardWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _scaleController;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 100),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.93).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _scaleController.dispose();
-    super.dispose();
-  }
-
-  void _onTapDown(_) => _scaleController.forward();
-  void _onTapUp(_) => _scaleController.reverse();
-  void _onTapCancel() => _scaleController.reverse();
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return AnimatedBuilder(
-      animation: _scaleAnimation,
-      builder: (context, child) => Transform.scale(
-        scale: _scaleAnimation.value,
-        child: child,
-      ),
-      child: GestureDetector(
-        onTapDown: widget.isTappable ? _onTapDown : null,
-        onTapUp: widget.isTappable ? _onTapUp : null,
-        onTapCancel: widget.isTappable ? _onTapCancel : null,
-        onTap: widget.isTappable ? widget.onTap : null,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(widget.isTappable ? 50 : 20),
-                blurRadius: widget.isTappable ? 12 : 4,
-                offset: Offset(0, widget.isTappable ? 4 : 2),
+    return GestureDetector(
+      onTap: isTappable ? onTap : null,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isTappable ? 50 : 20),
+              blurRadius: isTappable ? 12 : 4,
+              offset: Offset(0, isTappable ? 4 : 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant,
+                width: 1.0,
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: theme.colorScheme.outlineVariant,
-                  width: 1.0,
-                ),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: _cardGradient(theme),
-                ),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: _cardGradient(theme),
               ),
-              child: Column(
-                children: [
-                  // ── Top accent bar ──
-                  Container(
-                    height: 24,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          theme.colorScheme.primary.withAlpha(120),
-                          theme.colorScheme.primary.withAlpha(60),
-                        ],
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withAlpha(60),
-                            border: Border.all(
-                              color: Colors.white.withAlpha(120),
-                              width: 1,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${widget.index + 1}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
+            ),
+            child: Column(
+              children: [
+                // ── Top accent bar ──
+                Container(
+                  height: 24,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        theme.colorScheme.primary.withAlpha(120),
+                        theme.colorScheme.primary.withAlpha(60),
                       ],
                     ),
                   ),
-
-                  // ── Card body ──
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 4,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Chinese character
-                          Text(
-                            widget.card.word,
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withAlpha(60),
+                          border: Border.all(
+                            color: Colors.white.withAlpha(120),
+                            width: 1,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                              '${index + 1}',
                             style: const TextStyle(
-                              fontSize: 28,
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Card body ──
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 4,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Chinese character
+                          Text(
+                            card.word,
+                            style: const TextStyle(
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -904,35 +789,34 @@ class _GameCardWidgetState extends State<_GameCardWidget>
                             maxLines: 1,
                           ),
 
-                          // Bottom accent line
-                          Container(
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            height: 2,
-                            width: 28,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(60),
-                              borderRadius: BorderRadius.circular(1),
-                            ),
+                        // Bottom accent line
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          height: 2,
+                          width: 28,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(60),
+                            borderRadius: BorderRadius.circular(1),
                           ),
+                        ),
 
-                          // Pinyin
-                          if (widget.card.pinyin != null)
-                            Text(
-                              widget.card.pinyin!,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.white.withAlpha(170),
-                                fontStyle: FontStyle.italic,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
+                        // Pinyin
+                        if (card.pinyin != null)
+                          Text(
+                            card.pinyin!,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white.withAlpha(170),
+                              fontStyle: FontStyle.italic,
                             ),
-                        ],
-                      ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                          ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -1001,14 +885,13 @@ class _GameOverSheet extends StatelessWidget {
                     ? '${(state.correctCount / state.totalCards * 100).round()}%'
                     : '0%',
               ),
-              _StatBadge(label: 'Turns', value: '${state.turnNumber}'),
               _StatBadge(
-                label: 'Correct',
+                label: 'Cards',
                 value: '${state.correctCount}/${state.totalCards}',
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
@@ -1017,7 +900,7 @@ class _GameOverSheet extends StatelessWidget {
                   child: const Text('Back to Lobby'),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: FilledButton(
                   onPressed: onPlayAgain,
@@ -1026,8 +909,6 @@ class _GameOverSheet extends StatelessWidget {
               ),
             ],
           ),
-          // Bottom safe area padding
-          SizedBox(height: MediaQuery.of(context).padding.bottom),
         ],
       ),
     );
@@ -1038,18 +919,21 @@ class _StatBadge extends StatelessWidget {
   final String label;
   final String value;
 
-  const _StatBadge({required this.label, required this.value});
+  const _StatBadge({
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           value,
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         Text(
           label,
