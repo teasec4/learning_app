@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+
+import 'package:learning_app/core/app_colors.dart';
+import 'package:learning_app/core/app_theme.dart';
 import 'package:learning_app/presentation/providers/deck_provider.dart';
 import 'package:learning_app/domain/entities/deck.dart';
 import 'package:learning_app/route/router.dart';
@@ -13,7 +16,6 @@ class DecksPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Decks"),
-        // settings removed — no SettingsPage exists
       ),
       body: Consumer<DeckProvider>(
         builder: (context, provider, _) {
@@ -21,40 +23,28 @@ class DecksPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (provider.decks.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.folder_open,
-                      size: 64,
-                      color: Theme.of(context).colorScheme.outline),
-                  const SizedBox(height: 16),
-                  Text(
-                    "No decks yet",
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  FilledButton.icon(
-                    onPressed: () => _showCreateDialog(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text("Create deck"),
-                  ),
-                ],
-              ),
-            );
+            return _EmptyState(onCreate: () => _showCreateDialog(context));
           }
           return GridView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            padding: const EdgeInsets.fromLTRB(
+              AppTheme.spacingLg,
+              AppTheme.spacingLg,
+              AppTheme.spacingLg,
+              96,
+            ),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
+              childAspectRatio: AppTheme.deckCardAspectRatio,
+              crossAxisSpacing: AppTheme.spacingMd,
+              mainAxisSpacing: AppTheme.spacingMd,
             ),
             itemCount: provider.decks.length,
             itemBuilder: (_, index) {
               final deck = provider.decks[index];
-              return _DeckCardStack(deck: deck);
+              return _DeckCard(
+                deck: deck,
+                colorIndex: index,
+              );
             },
           );
         },
@@ -84,7 +74,7 @@ class DecksPage extends StatelessWidget {
                 hintText: "Deck name",
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.spacingMd),
             TextField(
               controller: descController,
               decoration: const InputDecoration(
@@ -119,107 +109,170 @@ class DecksPage extends StatelessWidget {
   }
 }
 
-class _DeckCardStack extends StatelessWidget {
-  final Deck deck;
-
-  const _DeckCardStack({required this.deck});
-
-  static const double _offset = 4;
-  static const double _radius = 12;
+// ─────────────────────────────────────────────────────────
+// Empty state
+// ─────────────────────────────────────────────────────────
+class _EmptyState extends StatelessWidget {
+  final VoidCallback onCreate;
+  const _EmptyState({required this.onCreate});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return GestureDetector(
-      onTap: () => context.push(AppRoutes.deckDetail(deck.id)),
-      child: Stack(
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Card layer 2 (bottom)
-          Positioned(
-            bottom: _offset,
-            right: _offset,
-            child: _cardLayer(
-              color: colorScheme.outline.withValues(alpha: 0.15),
+          Icon(
+            Icons.folder_open_rounded,
+            size: 72,
+            color: theme.colorScheme.outline,
+          ),
+          const SizedBox(height: AppTheme.spacingLg),
+          Text(
+            "No decks yet",
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
             ),
           ),
-          // Card layer 1 (middle)
-          Positioned(
-            bottom: _offset * 0.5,
-            right: _offset * 0.5,
-            child: _cardLayer(
-              color: colorScheme.outline.withValues(alpha: 0.25),
+          const SizedBox(height: AppTheme.spacingSm),
+          Text(
+            "Create your first deck to start learning",
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
-          // Card layer 0 (top — main)
-          Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(_radius),
-              border: Border.all(
-                color: colorScheme.outline.withValues(alpha: 0.2),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Decorative card pattern
-                  Expanded(
-                    child: Center(
-                      child: Icon(
-                        Icons.style,
-                        size: 48,
-                        color: colorScheme.primary.withValues(alpha: 0.3),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    deck.name,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.credit_card,
-                        size: 14,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        "${deck.cardCount} cards",
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+          const SizedBox(height: AppTheme.spacingXl),
+          FilledButton.icon(
+            onPressed: onCreate,
+            icon: const Icon(Icons.add),
+            label: const Text("Create deck"),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _cardLayer({required Color color}) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(_radius),
-        border: Border.all(
-          color: color.withValues(alpha: 0.1),
+// ─────────────────────────────────────────────────────────
+// Deck card
+// ─────────────────────────────────────────────────────────
+class _DeckCard extends StatelessWidget {
+  final Deck deck;
+  final int colorIndex;
+
+  const _DeckCard({
+    required this.deck,
+    required this.colorIndex,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final gradientColors = AppColors.deckGradient(colorIndex);
+    final accentColor = AppColors.deckColor(colorIndex);
+
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.deckDetail(deck.id)),
+      child: Hero(
+        tag: 'deck_${deck.id}',
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+            gradient: LinearGradient(
+              colors: gradientColors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppTheme.spacingLg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Top badge area ──
+                Row(
+                  children: [
+                    // Card count badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingSm,
+                        vertical: AppTheme.spacingXs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.credit_card_rounded,
+                            size: 12,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${deck.cardCount}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    // Decorative hanzi accent
+                    Text(
+                      deck.name.isNotEmpty
+                          ? String.fromCharCode(deck.name.runes.first)
+                          : '字',
+                      style: AppTheme.chineseStyle(
+                        size: 32,
+                        color: Colors.white.withValues(alpha: 0.2),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const Spacer(),
+
+                // ── Deck name ──
+                Text(
+                  deck.name,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+
+                const SizedBox(height: AppTheme.spacingXs),
+
+                // ── Description ──
+                if (deck.description != null &&
+                    deck.description!.isNotEmpty)
+                  Text(
+                    deck.description!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.75),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
