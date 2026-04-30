@@ -1,17 +1,29 @@
-# learning_app
+# Hanzi Battle (learning_app)
 
-A new Flutter project.
+Learn Chinese characters through gamified Hearthstone-like battles against AI.
+
+## Documentation
+
+| File | Contents |
+|------|----------|
+| [docs/steering/design.md](docs/steering/design.md) | Product vision, goals, game concept — read first |
+| [docs/steering/structure.md](docs/steering/structure.md) | Architecture, domain model, routing, project structure |
+| [docs/steering/tech.md](docs/steering/tech.md) | Stack, conventions, code patterns, quality gates |
+| [docs/specs/game-engine.md](docs/specs/game-engine.md) | Hearthstone-like battle mechanics, game state, AI opponent |
+| [docs/specs/navigation.md](docs/specs/navigation.md) | Navigation flows, content creation, page interactions |
+| [docs/roadmap.md](docs/roadmap.md) | Done, next, future, known issues |
+
+## Stack
+
+Flutter · Clean Architecture · GoRouter · Provider · Isar Community
+
+## Target
+
+iOS and Android (MVP). No desktop, no web.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub get
+flutter run
+```

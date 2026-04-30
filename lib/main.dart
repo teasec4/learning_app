@@ -39,10 +39,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: AppRouter.router,
-      title: 'Learning App',
-      theme: AppTheme.lightTheme(
-        ColorScheme.fromSeed(seedColor: AppColors.primary),
-      ),
+      title: 'Hanzi Battle',
+      theme: AppTheme.lightTheme(ColorScheme.fromSeed(seedColor: AppColors.primary)),
       debugShowCheckedModeBanner: false,
     );
   }

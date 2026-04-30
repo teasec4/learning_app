@@ -478,9 +478,7 @@ class _QuestionArea extends StatelessWidget {
                             boxShadow: [
                               BoxShadow(
                                 color: (state.phase == GamePhase.resultShown
-                                        ? (state.lastAnswerCorrect == true
-                                            ? Colors.green
-                                            : Colors.red)
+                                        ? Colors.red.shade300
                                         : Colors.red.shade800)
                                     .withAlpha(40),
                                 blurRadius: 12,
@@ -498,11 +496,9 @@ class _QuestionArea extends StatelessWidget {
                             child: Container(
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: state.phase == GamePhase.resultShown
-                                      ? (state.lastAnswerCorrect == true
-                                          ? Colors.green
-                                          : Colors.red.shade300)
-                                      : Colors.red.shade700,
+                                color: state.phase == GamePhase.resultShown
+                                    ? Colors.red.shade300
+                                    : Colors.red.shade700,
                                   width: state.phase == GamePhase.resultShown ? 2.0 : 1.0,
                                 ),
                                 gradient: LinearGradient(

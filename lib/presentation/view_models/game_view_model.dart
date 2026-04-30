@@ -240,7 +240,7 @@ class GameViewModel extends ChangeNotifier {
       playerHp: newHp,
       phase: GamePhase.resultShown,
       lastAnswerCorrect: false,
-      resultMessage: "Time's up! It was ${_state.currentQuestion?.word ?? '?'}",
+      resultMessage: 'Wrong!',
     );
     notifyListeners();
 

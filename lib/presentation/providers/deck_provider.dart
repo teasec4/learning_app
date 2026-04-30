@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:learning_app/data/models/deck_model.dart';
-import 'package:learning_app/data/models/word_card_model.dart';
 import 'package:learning_app/domain/entities/deck.dart';
 import 'package:learning_app/domain/repositories/deck_repository.dart';
-import 'package:learning_app/service/app_services.dart';
 
 class DeckProvider extends ChangeNotifier {
   final DeckRepository _repository;
@@ -19,9 +16,8 @@ class DeckProvider extends ChangeNotifier {
   }
 
   void _setupWatchers() {
-    final db = AppServices().database;
-    _deckSub = db.isar.deckModels.watchLazy().listen((_) => loadDecks());
-    _cardSub = db.isar.wordCardModels.watchLazy().listen((_) => loadDecks());
+    _deckSub = _repository.watchDecks().listen((_) => loadDecks());
+    _cardSub = _repository.watchCards().listen((_) => loadDecks());
   }
 
   List<Deck> get decks => _decks;

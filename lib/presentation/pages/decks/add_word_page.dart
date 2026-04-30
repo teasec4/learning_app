@@ -86,7 +86,7 @@ class _AddWordPageState extends State<AddWordPage> {
             TextFormField(
               controller: _pinyinController,
               decoration: const InputDecoration(
-                labelText: "Пиньинь",
+                labelText: 'Pinyin',
                 hintText: "xuéxí",
               ),
             ),
@@ -95,7 +95,7 @@ class _AddWordPageState extends State<AddWordPage> {
               controller: _translationController,
               decoration: const InputDecoration(
                 labelText: "Translation *",
-                hintText: "учить(ся), изучать",
+                hintText: 'to study, learn',
               ),
               validator: (v) =>
                   v == null || v.trim().isEmpty ? "Required" : null,

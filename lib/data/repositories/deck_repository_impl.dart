@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:isar_community/isar.dart';
 import 'package:learning_app/domain/entities/deck.dart';
 import 'package:learning_app/domain/repositories/deck_repository.dart';
@@ -70,6 +71,12 @@ class DeckRepositoryImpl implements DeckRepository {
         .deckIdEqualTo(deckId)
         .count();
   }
+
+  @override
+  Stream<void> watchDecks() => _db.isar.deckModels.watchLazy();
+
+  @override
+  Stream<void> watchCards() => _db.isar.wordCardModels.watchLazy();
 
   Deck _toEntity(DeckModel model, int cardCount) {
     return Deck(
